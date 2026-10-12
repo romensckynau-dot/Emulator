@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Emulator Arsenal</title>
+<style>
+:root{--bg:#f2f1ec;--fg:#1d1d1b;--card:#fff;--bd:#d6d4cc;--ac:#8b1e4f}
+@media(prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececec;--card:#222227;--bd:#3a3a42;--ac:#e0709f}}
+body{margin:0;padding:12px;background:var(--bg);color:var(--fg);font:15px system-ui,sans-serif}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:20px;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+button,.btn{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 14px;font:inherit;cursor:pointer;display:inline-block}
+.list{display:flex;flex-direction:column;gap:8px}
+.list button{background:var(--card);color:var(--fg);border:1px solid var(--bd);text-align:left}
+small{opacity:.7}
+#game{width:100%;height:70vh;max-height:720px}
+</style></head>
+<body><div class="wrap">
+<h1>Emulator Arsenal</h1>
+
+<div id="menu">
+  <div class="card">
+    <b>Play a file from your device</b><br><br>
+    <label class="btn">Choose ROM<input id="file" type="file" hidden></label>
+    <p><small>Supports .gb .gbc .nes .sfc .smc .gba .nds .n64 .z64 .md .gen .sms .gg .a26 .pce .iso .cue and more.</small></p>
+  </div>
+  <div class="card" id="libcard" hidden>
+    <b>Game library</b><br><br>
+    <div class="list" id="lib"></div>
+  </div>
+</div>
+
+<div id="stage" hidden>
+  <p><button onclick="location.reload()">Change game</button></p>
+  <div id="game"></div>
+</div>
+</div>
+
+<script>
+/* ---- EDIT THIS: games you put in the roms/ folder next to index.html ----
+   core names: gb, nes, snes, gba, nds, n64, segaMD, segaMS, segaGG, atari2600, pce, psx */
+const GAMES = [
+  // { name: "My Game", core: "gb", url: "roms/mygame.gb" },
+];
+
+const CORES = {gb:"gb",gbc:"gb",nes:"nes",fds:"nes",sfc:"snes",smc:"snes",gba:"gba",nds:"nds",n64:"n64",z64:"n64",v64:"n64",
+  md:"segaMD",gen:"segaMD",smd:"segaMD",sms:"segaMS",gg:"segaGG",a26:"atari2600",a78:"atari7800",lnx:"lynx",pce:"pce",
+  vb:"vb",ws:"ws",wsc:"ws",ngp:"ngp",ngc:"ngp",iso:"psx",cue:"psx",pbp:"psx",chd:"psx"};
+
+function start(core, url, name){
+  document.getElementById('menu').hidden = true;
+  document.getElementById('stage').hidden = false;
+  window.EJS_player = '#game';
+  window.EJS_core = core;
+  window.EJS_gameUrl = url;
+  window.EJS_gameName = name;
+  window.EJS_pathtodata = 'data/';   // the data folder from the 4.2.3 release
+  window.EJS_startOnLoaded = true;
+  const s = document.createElement('script');
+  s.src = 'data/loader.js';
+  s.onerror = () => alert('Could not load data/loader.js. Put this file next to the "data" folder from EmulatorJS 4.2.3 and open it through a web server (not file://).');
+  document.body.appendChild(s);
+}
+
+document.getElementById('file').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const ext = f.name.split('.').pop().toLowerCase();
+  const core = CORES[ext];
+  if(!core){ alert('Unknown file type: .' + ext); return; }
+  start(core, URL.createObjectURL(f), f.name.replace(/\.[^.]+$/, ''));
+};
+
+if(GAMES.length){
+  document.getElementById('libcard').hidden = false;
+  const lib = document.getElementById('lib');
+  GAMES.forEach(g => {
+    const b = document.createElement('button');
+    b.textContent = g.name;
+    b.onclick = () => start(g.core, g.url, g.name);
+    lib.appendChild(b);
+  });
+}
+</script>
+</body></html>
